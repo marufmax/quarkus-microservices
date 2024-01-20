@@ -1,8 +1,13 @@
 package com.marufalom.accounts;
 
 import jakarta.annotation.PostConstruct;
+import jakarta.json.Json;
+import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.ext.Provider;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -33,6 +38,33 @@ public class AccountResource {
                 .filter(account -> account.getAccountNumber().equals(accountNumber))
                 .findFirst();
 
-        return response.orElseThrow(() -> new WebApplicationException("Account with number %s not found", 404));
+        return response.orElseThrow(() -> new WebApplicationException(String.format("Account with number %s not found", accountNumber), 404));
+    }
+
+    @Provider
+    public static class ErrorMapper implements ExceptionMapper<Exception> {
+
+        @Override
+        public Response toResponse(Exception exception) {
+
+            int code = 500;
+            if (exception instanceof WebApplicationException) {
+                code = ((WebApplicationException) exception).getResponse().getStatus();
+            }
+
+            JsonObjectBuilder entityBuilder = Json.createObjectBuilder()
+                    .add("Exception type", exception.getClass().getName())
+                    .add("code", code)
+                ;
+
+            if (exception.getMessage() != null) {
+                entityBuilder.add("Error", exception.getMessage());
+            }
+
+            return Response.status(code)
+                    .entity(entityBuilder.build())
+                    .build()
+                ;
+        }
     }
 }
