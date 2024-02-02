@@ -1,6 +1,7 @@
 package com.marufalom.accounts;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Account {
     public long accountNumber;
@@ -18,6 +19,22 @@ public class Account {
         this.customerNumber = customerNumber;
         this.customerName = customerName;
         this.balance = balance;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+
+        if (object == null || getClass() != object.getClass()) return false;
+
+        Account account = (Account) object;
+
+        return accountNumber == account.accountNumber && customerNumber == account.customerNumber;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(accountNumber, customerNumber);
     }
 
     public void markOverdrawn() {
